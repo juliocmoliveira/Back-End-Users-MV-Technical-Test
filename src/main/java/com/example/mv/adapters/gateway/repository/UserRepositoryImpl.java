@@ -1,9 +1,9 @@
 package com.example.mv.adapters.gateway.repository;
 
 import com.example.mv.application.gateway.repository.UserRepository;
+import com.example.mv.infrastructure.config.exceptions.UserNotFoundException;
 import com.example.mv.infrastructure.persistence.entity.UserEntity;
 import com.example.mv.infrastructure.persistence.repository.UserJpaRepository;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -43,15 +43,16 @@ public class UserRepositoryImpl implements UserRepository {
                     userEntity.setCreateDate(existingUser.getCreateDate());
                     return userJpaRepository.save(userEntity);
                 })
-                .orElseThrow(() -> new EntityNotFoundException("User not found by id: " + id));
+                .orElseThrow(UserNotFoundException::new);
     }
 
     @Override
+    @Transactional
     public void deleteUser(Long id) {
         userJpaRepository.findById(id)
                 .ifPresentOrElse(
                         userJpaRepository::delete,
-                        () -> { throw new EntityNotFoundException("User not found"); }
+                        () -> { throw new UserNotFoundException(); }
                 );
     }
 }
